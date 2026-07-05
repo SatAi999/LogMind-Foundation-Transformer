@@ -112,38 +112,55 @@ The entire Transformer stack is custom-implemented in PyTorch without high-level
 
 ### 1. Token Embeddings & Positional Encodings
 The input token IDs are projected to a dense representation:
-$$E = W[X]$$
+```math
+E = W[X]
+```
 Where $X$ is the input sequence of token IDs, $E$ is the dense representation, and $W \in \mathbb{R}^{V \times D}$ (with $V$ as vocabulary size and $D$ as model dimension).
 
 We support two modes of positional encodings:
 * **Sinusoidal Positional Encodings**: Non-learnable trigonometric coordinates:
-  $$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/D}}\right), \quad PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/D}}\right)$$
+  ```math
+  PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/D}}\right), \quad PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/D}}\right)
+  ```
+  where $D$ is the model dimension.
 * **Learned Positional Embeddings**: A parameter weight matrix $P \in \mathbb{R}^{S \times D}$ where $S$ is the maximum sequence length.
 
 The final input representation is:
-$$X_0 = \text{Dropout}(E + P)$$
+```math
+X_0 = \text{Dropout}(E + P)
+```
 
 ### 2. Multi-Head Self-Attention (MHA)
 Inputs are projected to Query ($Q$), Key ($K$), and Value ($V$) matrices using manual parameter multiplications:
-$$Q = X W_q + b_q, \quad K = X W_k + b_k, \quad V = X W_v + b_v$$
+```math
+Q = X W_q + b_q, \quad K = X W_k + b_k, \quad V = X W_v + b_v
+```
 Where $W_q, W_k, W_v \in \mathbb{R}^{D \times D}$. These projections are split into $H$ heads of dimension $d = D / H$.
 
 The attention weights are computed using a scaled dot-product:
-$$\text{Attention}(q, k, v) = \text{softmax}\left(\frac{q k^T}{\sqrt{d}} + M\right) v$$
+```math
+\text{Attention}(q, k, v) = \text{softmax}\left(\frac{q k^T}{\sqrt{d}} + M\right) v
+```
 * **Modular Masking Matrix ($M$ value assignment)**:
   * **Bidirectional Masking**: Prevents attention to padding tokens. $M_{i,j} = 0$ for active tokens, and $M_{i,j} = -10^9$ for padding tokens.
   * **Causal Masking**: Enforces autoregressive constraints. $M_{i,j} = 0$ for active tokens where $j \le i$, and $M_{i,j} = -10^9$ for padding tokens or when $j > i$.
 
 ### 3. Layer Normalization
 Normalizes each sample across the final feature dimension:
-$$\text{LN}(X) = \gamma \odot \left(\frac{X - \mu}{\sqrt{\sigma^2 + \epsilon}}\right) + \beta$$
+```math
+\text{LN}(X) = \gamma \odot \left(\frac{X - \mu}{\sqrt{\sigma^2 + \epsilon}}\right) + \beta
+```
 Where mean ($\mu$) and biased variance ($\sigma^2$) are calculated manually. $\gamma$ and $\beta$ are learnable vectors, and $\epsilon = 10^{-5}$.
 
 ### 4. Residual Routing
 * **Pre-LN (Default)**: Normalization is applied *before* the sublayer:
-  $$X_{out} = X_{in} + \text{Dropout}(\text{Sublayer}(\text{LN}(X_{in})))$$
+  ```math
+  X_{out} = X_{in} + \text{Dropout}(\text{Sublayer}(\text{LN}(X_{in})))
+  ```
 * **Post-LN**: Normalization is applied *after* adding the residual:
-  $$X_{out} = \text{LN}(X_{in} + \text{Dropout}(\text{Sublayer}(X_{in})))$$
+  ```math
+  X_{out} = \text{LN}(X_{in} + \text{Dropout}(\text{Sublayer}(X_{in})))
+  ```
 
 ---
 
@@ -151,22 +168,34 @@ Where mean ($\mu$) and biased variance ($\sigma^2$) are calculated manually. $\g
 
 ### 1. Next Log Event & MLM Head
 Projects sequence representations to the vocabulary space to predict token probabilities:
-$$\text{Logits}_{MLM} = H W_{out} + b_{out}$$
+```math
+\text{Logits}_{MLM} = H W_{out} + b_{out}
+```
 Where $H \in \mathbb{R}^{B \times L \times D}$.
 
 ### 2. Anomaly Classification (Failure Prediction) Head
 Performs sequence classification using a two-layer Multi-Layer Perceptron (MLP) over the `[CLS]` token representation ($h \in \mathbb{R}^{D}$):
-$$h_{int} = \tanh(h W_1 + b_1)$$
-$$\text{Logit}_{anomaly} = h_{int} W_2 + b_2$$
+```math
+h_{int} = \tanh(h W_1 + b_1)
+```
+```math
+\text{Logit}_{anomaly} = h_{int} W_2 + b_2
+```
 
 ### 3. Root Cause Analysis (RCA) Head
 Categorizes sequences into 6 distinct classes:
-$$\text{Logits}_{RCA} = \text{GELU}(h W_a + b_a) W_b + b_b \quad \text{where } \text{Logits}_{RCA} \in \mathbb{R}^6$$
+```math
+\text{Logits}_{RCA} = \text{GELU}(h W_a + b_a) W_b + b_b \quad \text{where } \text{Logits}_{RCA} \in \mathbb{R}^6
+```
 
 ### 4. Contrastive Projection Head
 Projects the sequence embedding to a metric space and applies $L_2$ normalization:
-$$z = h W_{proj} + b_{proj} \quad \text{where } z \in \mathbb{R}^{d_{emb}}$$
-$$e = \frac{z}{\|z\|_2}$$
+```math
+z = h W_{proj} + b_{proj} \quad \text{where } z \in \mathbb{R}^{d_{emb}}
+```
+```math
+e = \frac{z}{\|z\|_2}$
+```
 
 ---
 
@@ -174,16 +203,24 @@ $$e = \frac{z}{\|z\|_2}$$
 
 ### 1. Stage 1: Self-Supervised Losses
 * **MLM Loss**: Cross-entropy loss over masked positions (unmasked positions are set to $-100$):
-  $$\mathcal{L}_{MLM} = -\frac{1}{N_{masked}} \sum_{i \in \text{masked}} \log P(x_i = y_i)$$
+  ```math
+  L(\text{MLM}) = -\frac{1}{N_{masked}} \sum_{i \in \text{masked}} \log P(x_i = y_i)
+  ```
 * **CLM Loss**: Shifts targets by 1 step to predict subsequent event templates:
-  $$\mathcal{L}_{CLM} = -\frac{1}{L-1} \sum_{t=0}^{L-2} \log P(x_{t+1} | x_{\le t})$$
+  ```math
+  L(\text{CLM}) = -\frac{1}{L-1} \sum_{t=0}^{L-2} \log P(x_{t+1} | x_{\le t})
+  ```
 
 ### 2. Stage 2: Joint Supervised Fine-Tuning Losses
-$$\mathcal{L}_{total} = w_1 \mathcal{L}_{anomaly} + w_2 \mathcal{L}_{RCA} + w_3 \mathcal{L}_{contrastive}$$
-* **$\mathcal{L}_{anomaly}$**: Binary Cross-Entropy with Logits.
-* **$\mathcal{L}_{RCA}$**: Multi-class Cross-Entropy.
-* **$\mathcal{L}_{contrastive}$ (Siamese Pairwise Contrastive Loss)**: Evaluates pairwise similarity $s_{i,j} = e_i \cdot e_j$ for a batch of size $B$:
-  $$\mathcal{L}_{contrastive} = \frac{1}{|P|} \sum_{(i,j) \in P} (1 - s_{i,j}) + \frac{1}{|N|} \sum_{(i,j) \in N} \max(0, s_{i,j} - m)^2$$
+```math
+L(\text{total}) = w_1 L(\text{anomaly}) + w_2 L(\text{RCA}) + w_3 L(\text{contrastive})
+```
+* **$L(\text{anomaly})$**: Binary Cross-Entropy with Logits.
+* **$L(\text{RCA})$**: Multi-class Cross-Entropy.
+* **$L(\text{contrastive})$ (Siamese Pairwise Contrastive Loss)**: Evaluates pairwise similarity $s_{i,j} = e_i \cdot e_j$ for a batch of size $B$:
+  ```math
+  L(\text{contrastive}) = \frac{1}{|P|} \sum_{(i,j) \in P} (1 - s_{i,j}) + \frac{1}{|N|} \sum_{(i,j) \in N} \max(0, s_{i,j} - m)^2
+  ```
   * $P$: Positive pairs where labels are identical ($l_i = l_j$).
   * $N$: Negative pairs where labels differ ($l_i \neq l_j$).
   * $m$: Margin parameter (default $0.5$).
