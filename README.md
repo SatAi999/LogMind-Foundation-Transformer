@@ -1,8 +1,6 @@
-# LogMind: A Self-Supervised Transformer Encoder for Multi-Task Log Intelligence
+# LogMind: A Custom Multi-Task Transformer for Enterprise Log Intelligence
 
-LogMind is a custom, first-principles Transformer Encoder architecture designed for multi-task enterprise log intelligence. Built using low-level PyTorch tensor operations, it implements the complete Transformer Encoder stack from scratch, bypassing high-level abstractions like `nn.Transformer`, `nn.TransformerEncoder`, and `nn.MultiheadAttention`.
-
-The model performs self-supervised pretraining (Masked Language Modeling and Causal Next-Event prediction) over raw log sequences and then transfers those weights to execute concurrent downstream tasks: anomaly detection, root cause classification, and vector-similarity incident search.
+Building a custom Transformer architecture from scratch for anomaly detection, failure prediction, root cause analysis, next-event prediction, and intelligent log understanding.
 
 ---
 
