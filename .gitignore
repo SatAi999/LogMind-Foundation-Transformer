@@ -1,0 +1,20 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.venv/
+ENV/
+env/
+
+# Datasets (large files)
+HDFS_1/HDFS.log
+
+# IDEs
+.idea/
+.vscode/
+
+# Pytest cache
+.pytest_cache/

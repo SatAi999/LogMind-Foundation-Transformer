@@ -1,0 +1,15 @@
+{
+    "failure_prediction": {
+        "accuracy": 0.976039658496282,
+        "precision": 1.0,
+        "recall": 0.5396825396825397,
+        "f1": 0.7010309278350515,
+        "auc": 0.7728372516286519
+    },
+    "root_cause_analysis": {
+        "accuracy": 0.976039658496282,
+        "precision_macro": 0.7950694247662227,
+        "recall_macro": 0.6948148148148148,
+        "f1_macro": 0.7261471609950484
+    }
+}

@@ -1,0 +1,36 @@
+data:
+  log_path: "D:/Computer_Vision/LogFormer/HDFS_1/HDFS.log"
+  label_path: "D:/Computer_Vision/LogFormer/HDFS_1/anomaly_label.csv"
+  vocab_path: "D:/Computer_Vision/LogFormer/checkpoints/vocab.json"
+  max_lines: 500000  # Number of log lines to parse (None for full file)
+  max_len: 64        # Maximum sequence length
+  mlm_probability: 0.15
+  train_split: 0.8
+  val_split: 0.1
+  test_split: 0.1
+  seed: 42
+
+model:
+  d_model: 128       # Embedding dimension
+  n_heads: 4         # Number of attention heads
+  n_layers: 3        # Number of encoder layers
+  d_ff: 256          # Feed-forward network hidden dimension
+  dropout: 0.1
+  num_classes_anomaly: 1  # Binary classification (Normal vs Anomaly)
+  num_classes_rca: 6      # Multi-class RCA (0: Normal, 1-5: Failure categories)
+  embed_type: "learned"   # "sinusoidal" or "learned"
+
+training:
+  pretrain:
+    epochs: 5
+    batch_size: 64
+    learning_rate: 0.0002
+    weight_decay: 0.01
+    warmup_steps: 100
+  finetune:
+    epochs: 10
+    batch_size: 64
+    learning_rate: 0.0001
+    weight_decay: 0.01
+    warmup_steps: 100
+  device: "cuda"          # Use GPU acceleration
