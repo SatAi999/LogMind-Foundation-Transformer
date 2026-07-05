@@ -67,7 +67,7 @@ def get_inference_backend():
     backend.build_similarity_database(
         log_path=backend.config["data"]["log_path"],
         label_path=backend.config["data"]["label_path"],
-        max_lines=150000
+        max_lines=20000
     )
     return backend
 
