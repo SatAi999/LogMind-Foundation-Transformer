@@ -10,15 +10,17 @@ def main():
         "run", 
         r"d:\Computer_Vision\LogFormer\app.py", 
         "--server.port", "8501", 
-        "--server.headless", "true"
+        "--server.headless", "true",
+        "--browser.gatherUsageStats", "false",
+        "--client.toolbarMode", "hidden"
     ]
     
     # Start streamlit as a background process
     proc = subprocess.Popen(streamlit_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    # Wait for the model loading and similarity database to index (approx 12 seconds)
-    print("Waiting 12 seconds for model and vector similarity index to build...")
-    time.sleep(12)
+    # Wait for the model loading and similarity database to index (approx 35 seconds)
+    print("Waiting 35 seconds for model and vector similarity index to build...")
+    time.sleep(35)
     
     chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
     output_path = r"d:\Computer_Vision\LogFormer\plots\logmind_dashboard_preview.png"
