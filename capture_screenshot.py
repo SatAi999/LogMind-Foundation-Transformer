@@ -9,14 +9,14 @@ def main():
         r"D:\Computer_Vision\venv\Scripts\streamlit.exe", 
         "run", 
         r"d:\Computer_Vision\LogFormer\app.py", 
-        "--server.port", "8501", 
+        "--server.port", "8999", 
         "--server.headless", "true",
         "--browser.gatherUsageStats", "false",
         "--client.toolbarMode", "hidden"
     ]
     
-    # Start streamlit as a background process
-    proc = subprocess.Popen(streamlit_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # Start streamlit as a background process with output routed to DEVNULL to prevent deadlock
+    proc = subprocess.Popen(streamlit_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
     # Wait for the model loading and similarity database to index (approx 35 seconds)
     print("Waiting 35 seconds for model and vector similarity index to build...")
@@ -35,7 +35,7 @@ def main():
         "--window-size=1280,800",
         "--hide-scrollbars",
         f"--screenshot={output_path}",
-        "http://localhost:8501"
+        "http://localhost:8999"
     ]
     
     print("Running Headless Chrome to capture screenshot...")

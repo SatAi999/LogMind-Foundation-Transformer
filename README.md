@@ -194,7 +194,7 @@ Projects the sequence embedding to a metric space and applies $L_2$ normalizatio
 z = h W_{proj} + b_{proj} \quad \text{where } z \in \mathbb{R}^{d_{emb}}
 ```
 ```math
-e = \frac{z}{\|z\|_2}$
+e = \frac{z}{\|z\|_2}
 ```
 
 ---
