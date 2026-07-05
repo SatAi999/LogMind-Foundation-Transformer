@@ -27,12 +27,13 @@ def main():
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
-    # Headless chrome screenshot command
+    # Headless chrome screenshot command with virtual time budget to allow JS to render
     chrome_cmd = [
         chrome_path,
         "--headless",
         "--disable-gpu",
         "--window-size=1280,800",
+        "--virtual-time-budget=20000",
         "--hide-scrollbars",
         f"--screenshot={output_path}",
         "http://localhost:8999"
