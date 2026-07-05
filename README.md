@@ -6,6 +6,19 @@ The model performs self-supervised pretraining (Masked Language Modeling and Cau
 
 ---
 
+## 🖥️ Streamlit Interactive UI Dashboard
+
+LogMind includes a complete dashboard to interact with the model locally. Below is the active interface showing multi-task inference, sequence classification, and self-attention mappings:
+
+![LogMind Dashboard Screenshot](plots/logmind_dashboard_preview.png)
+
+To launch the dashboard:
+```bash
+streamlit run app.py
+```
+
+---
+
 ## 🏗️ Architecture Design & Lifecycles
 
 LogMind structures log intelligence as a two-stage **pretrain-then-finetune** lifecycle, sharing a single Transformer Encoder to extract log sequence representations:
@@ -117,11 +130,9 @@ Where $W_q, W_k, W_v \in \mathbb{R}^{D \times D}$. These projections are split i
 
 The attention weights are computed using a scaled dot-product:
 $$\text{Attention}(q, k, v) = \text{softmax}\left(\frac{q k^T}{\sqrt{d}} + M\right) v$$
-* **Modular Masking Matrix ($M$)**:
-  * *Bidirectional Masking*: Ensures that padding tokens do not receive attention:
-    $$M_{i,j} = \begin{cases} 0 & \text{if } j \text{ is active} \\ -10^9 & \text{if } j \text{ is padding} \end{cases}$$
-  * *Causal Masking*: Combines the padding mask with a lower-triangular causal matrix to enforce autoregressive restrictions:
-    $$M_{i,j} = \begin{cases} 0 & \text{if } j \le i \text{ and } j \text{ is active} \\ -10^9 & \text{if } j > i \text{ or } j \text{ is padding} \end{cases}$$
+* **Modular Masking Matrix ($M$ value assignment)**:
+  * **Bidirectional Masking**: Prevents attention to padding tokens. $M_{i,j} = 0$ for active tokens, and $M_{i,j} = -10^9$ for padding tokens.
+  * **Causal Masking**: Enforces autoregressive constraints. $M_{i,j} = 0$ for active tokens where $j \le i$, and $M_{i,j} = -10^9$ for padding tokens or when $j > i$.
 
 ### 3. Layer Normalization
 Normalizes each sample across the final feature dimension:
@@ -169,6 +180,8 @@ $$e = \frac{z}{\|z\|_2}$$
 
 ### 2. Stage 2: Joint Supervised Fine-Tuning Losses
 $$\mathcal{L}_{total} = w_1 \mathcal{L}_{anomaly} + w_2 \mathcal{L}_{RCA} + w_3 \mathcal{L}_{contrastive}$$
+* **$\mathcal{L}_{anomaly}$**: Binary Cross-Entropy with Logits.
+* **$\mathcal{L}_{RCA}$**: Multi-class Cross-Entropy.
 * **$\mathcal{L}_{contrastive}$ (Siamese Pairwise Contrastive Loss)**: Evaluates pairwise similarity $s_{i,j} = e_i \cdot e_j$ for a batch of size $B$:
   $$\mathcal{L}_{contrastive} = \frac{1}{|P|} \sum_{(i,j) \in P} (1 - s_{i,j}) + \frac{1}{|N|} \sum_{(i,j) \in N} \max(0, s_{i,j} - m)^2$$
   * $P$: Positive pairs where labels are identical ($l_i = l_j$).
@@ -221,21 +234,6 @@ The training and evaluation scripts output real visualizations under the `plots/
 | Attention Map |
 | :---: |
 | ![Attention Map](plots/sample_attention_heatmap.png) |
-
----
-
-## 🖥️ Streamlit Interactive UI Dashboard
-
-LogMind includes a complete dashboard to interact with the model locally.
-
-### How to Add Your Live Dashboard Screenshot:
-Because this project is running locally in your workspace, I cannot take a screenshot of your screen. To add your own screenshot:
-1. Launch the dashboard by running: `streamlit run app.py`
-2. Take a screenshot of the running dashboard in your web browser.
-3. Save that image as `plots/logmind_dashboard_preview.png`.
-4. The dashboard preview will then display here:
-
-![LogMind Dashboard Screenshot](plots/logmind_dashboard_preview.png)
 
 ---
 
